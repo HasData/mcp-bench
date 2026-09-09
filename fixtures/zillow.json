@@ -1,0 +1,145 @@
+{
+  "target": "zillow",
+  "servers": [
+    {
+      "id": "hasdata",
+      "transport": "http",
+      "url": "https://mcp.hasdata.com/api/mcp?apis=zillow",
+      "headers": {
+        "x-api-key": "$HASDATA_API_KEY"
+      },
+      "tasks": [
+        {
+          "name": "search-for-sale",
+          "tool": "hasdata_zillow_listing_getRealEstateListings",
+          "args": {
+            "keyword": "Austin, TX",
+            "type": "forSale"
+          }
+        },
+        {
+          "name": "property-details",
+          "tool": "hasdata_zillow_property_getPropertyDetails",
+          "args": {
+            "url": "https://www.zillow.com/homedetails/4800-Filey-Cv-Austin-TX-78721/29392766_zpid/"
+          }
+        }
+      ]
+    },
+    {
+      "id": "zillapi",
+      "transport": "http",
+      "url": "https://api.zillapi.com/mcp",
+      "headers": {
+        "Authorization": "Bearer $ZILLAPI_KEY"
+      },
+      "tasks": [
+        {
+          "name": "search-for-sale",
+          "tool": "search_listings",
+          "args": {
+            "bbox": "-97.94,30.10,-97.56,30.52",
+            "status": "for_sale"
+          }
+        },
+        {
+          "name": "property-details",
+          "tool": "lookup_property_by_zpid",
+          "args": {
+            "zpid": 29392766
+          }
+        }
+      ]
+    },
+    {
+      "id": "apillow",
+      "transport": "stdio",
+      "command": "uvx",
+      "args": [
+        "--with",
+        "mcp<2",
+        "apillow-mcp"
+      ],
+      "env": {
+        "APILLOW_API_KEY": "$APILLOW_API_KEY"
+      },
+      "tasks": [
+        {
+          "name": "search-for-sale",
+          "tool": "search_properties",
+          "args": {
+            "query": "Austin TX",
+            "type": "for_sale"
+          }
+        },
+        {
+          "name": "property-details",
+          "tool": "get_property_by_url",
+          "args": {
+            "url": "https://www.zillow.com/homedetails/4800-Filey-Cv-Austin-TX-78721/29392766_zpid/"
+          }
+        }
+      ]
+    },
+    {
+      "id": "brightdata-pro",
+      "transport": "http",
+      "url": "https://mcp.brightdata.com/mcp?token=$BRIGHTDATA_API_TOKEN&pro=1",
+      "headers": {},
+      "tasks": [
+        {
+          "name": "search-for-sale",
+          "tool": "scrape_as_markdown",
+          "args": {
+            "url": "https://www.zillow.com/austin-tx/"
+          }
+        },
+        {
+          "name": "property-details",
+          "tool": "web_data_zillow_properties_listing",
+          "args": {
+            "url": "https://www.zillow.com/homedetails/4800-Filey-Cv-Austin-TX-78721/29392766_zpid/"
+          }
+        }
+      ]
+    },
+    {
+      "id": "chrischall-zillow-mcp",
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "zillow-mcp"
+      ],
+      "env": {},
+      "tasks": [
+        {
+          "name": "search-for-sale",
+          "tool": "zillow_search_properties",
+          "args": {
+            "location": "Austin, TX",
+            "status": "for_sale"
+          }
+        },
+        {
+          "name": "property-details",
+          "tool": "zillow_get_property",
+          "args": {
+            "url": "https://www.zillow.com/homedetails/4800-Filey-Cv-Austin-TX-78721/29392766_zpid/"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sap156-zillow-mcp-server",
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "zillow-mcp-server"
+      ],
+      "env": {},
+      "tasks": []
+    }
+  ]
+}

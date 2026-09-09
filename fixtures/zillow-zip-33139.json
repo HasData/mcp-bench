@@ -1,0 +1,102 @@
+{
+  "target": "zillow-zip-33139",
+  "servers": [
+    {
+      "id": "hasdata",
+      "transport": "http",
+      "url": "https://mcp.hasdata.com/api/mcp?apis=zillow",
+      "headers": {
+        "x-api-key": "$HASDATA_API_KEY"
+      },
+      "tasks": [
+        {
+          "name": "search-zip",
+          "tool": "hasdata_zillow_listing_getRealEstateListings",
+          "args": {
+            "keyword": "33139",
+            "type": "forSale"
+          }
+        }
+      ]
+    },
+    {
+      "id": "apify-afanasenko",
+      "transport": "http",
+      "url": "https://mcp.apify.com/?tools=afanasenko/zillow-mcp-server",
+      "headers": {
+        "Authorization": "Bearer $APIFY_TOKEN"
+      },
+      "tasks": [
+        {
+          "name": "search-zip",
+          "tool": "afanasenko--zillow-mcp-server--zillow_search_by_zip",
+          "args": {
+            "zip_codes": [
+              "33139"
+            ],
+            "max_properties": 40
+          }
+        }
+      ]
+    },
+    {
+      "id": "apillow",
+      "transport": "stdio",
+      "command": "uvx",
+      "args": [
+        "--with",
+        "mcp<2",
+        "apillow-mcp"
+      ],
+      "env": {
+        "APILLOW_API_KEY": "$APILLOW_API_KEY"
+      },
+      "tasks": [
+        {
+          "name": "search-zip",
+          "tool": "search_by_zip",
+          "args": {
+            "zipcodes": [
+              33139
+            ],
+            "type": "for_sale"
+          }
+        }
+      ]
+    },
+    {
+      "id": "brightdata-pro",
+      "transport": "http",
+      "url": "https://mcp.brightdata.com/mcp?token=$BRIGHTDATA_API_TOKEN&pro=1",
+      "headers": {},
+      "tasks": [
+        {
+          "name": "search-zip",
+          "tool": "scrape_as_markdown",
+          "args": {
+            "url": "https://www.zillow.com/miami-beach-fl-33139/"
+          }
+        }
+      ]
+    },
+    {
+      "id": "striderlabs-mcp-zillow",
+      "transport": "stdio",
+      "command": "node",
+      "args": [
+        "vendors/mcp-zillow/dist/index.js"
+      ],
+      "env": {},
+      "tasks": [
+        {
+          "name": "search-zip",
+          "tool": "search_homes",
+          "args": {
+            "location": "33139"
+          }
+        }
+      ],
+      "note": "npm package ships no dist; git clone https://github.com/markswendsen-code/mcp-zillow vendors/mcp-zillow && npm install && npm run build"
+    }
+  ]
+}

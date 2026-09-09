@@ -1,0 +1,63 @@
+{
+  "target": "airbnb",
+  "servers": [
+    {
+      "id": "hasdata",
+      "transport": "http",
+      "url": "https://mcp.hasdata.com/api/mcp?apis=airbnb",
+      "headers": {
+        "x-api-key": "$HASDATA_API_KEY"
+      },
+      "tasks": [
+        {
+          "name": "search",
+          "tool": "hasdata_airbnb_listing_getAirbnbListings",
+          "args": {
+            "location": "Austin, TX",
+            "checkIn": "2026-10-10",
+            "checkOut": "2026-10-13",
+            "adults": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "openbnb",
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@openbnb/mcp-server-airbnb",
+        "--ignore-robots-txt"
+      ],
+      "env": {},
+      "tasks": [
+        {
+          "name": "search",
+          "tool": "airbnb_search",
+          "args": {
+            "location": "Austin, TX",
+            "checkin": "2026-10-10",
+            "checkout": "2026-10-13",
+            "adults": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "brightdata-pro",
+      "transport": "http",
+      "url": "https://mcp.brightdata.com/mcp?token=$BRIGHTDATA_API_TOKEN&pro=1",
+      "headers": {},
+      "tasks": [
+        {
+          "name": "search",
+          "tool": "scrape_as_markdown",
+          "args": {
+            "url": "https://www.airbnb.com/s/Austin--TX/homes?checkin=2026-10-10&checkout=2026-10-13&adults=2"
+          }
+        }
+      ]
+    }
+  ]
+}

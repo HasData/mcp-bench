@@ -1,0 +1,75 @@
+{
+  "target": "zillow-sold-phoenix",
+  "servers": [
+    {
+      "id": "hasdata",
+      "transport": "http",
+      "url": "https://mcp.hasdata.com/api/mcp?apis=zillow",
+      "headers": {
+        "x-api-key": "$HASDATA_API_KEY"
+      },
+      "tasks": [
+        {
+          "name": "search-sold",
+          "tool": "hasdata_zillow_listing_getRealEstateListings",
+          "args": {
+            "keyword": "Phoenix, AZ",
+            "type": "sold"
+          }
+        }
+      ]
+    },
+    {
+      "id": "zillapi",
+      "transport": "http",
+      "url": "https://api.zillapi.com/mcp",
+      "headers": {
+        "Authorization": "Bearer $ZILLAPI_KEY"
+      },
+      "tasks": [
+        {
+          "name": "search-sold",
+          "tool": "search_listings",
+          "args": {
+            "bbox": "-112.32,33.29,-111.93,33.92",
+            "status": "sold"
+          }
+        }
+      ]
+    },
+    {
+      "id": "brightdata-pro",
+      "transport": "http",
+      "url": "https://mcp.brightdata.com/mcp?token=$BRIGHTDATA_API_TOKEN&pro=1",
+      "headers": {},
+      "tasks": [
+        {
+          "name": "search-sold",
+          "tool": "scrape_as_markdown",
+          "args": {
+            "url": "https://www.zillow.com/phoenix-az/sold/"
+          }
+        }
+      ]
+    },
+    {
+      "id": "striderlabs-mcp-zillow",
+      "transport": "stdio",
+      "command": "node",
+      "args": [
+        "vendors/mcp-zillow/dist/index.js"
+      ],
+      "env": {},
+      "tasks": [
+        {
+          "name": "search-sold",
+          "tool": "search_homes",
+          "args": {
+            "location": "Phoenix, AZ"
+          }
+        }
+      ],
+      "note": "npm package ships no dist; git clone https://github.com/markswendsen-code/mcp-zillow vendors/mcp-zillow && npm install && npm run build"
+    }
+  ]
+}

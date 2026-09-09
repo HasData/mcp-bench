@@ -1,0 +1,144 @@
+{
+  "target": "duckduckgo",
+  "servers": [
+    {
+      "id": "hasdata",
+      "transport": "http",
+      "url": "https://mcp.hasdata.com/api/mcp?apis=duckduckgo",
+      "headers": {
+        "x-api-key": "$HASDATA_API_KEY"
+      },
+      "tasks": [
+        {
+          "name": "search",
+          "tool": "hasdata_duckduckgo_serp_getSearchResults",
+          "args": {
+            "q": "best pizza in chicago"
+          }
+        }
+      ]
+    },
+    {
+      "id": "nickclyde-duckduckgo-mcp-server",
+      "transport": "stdio",
+      "command": "uvx",
+      "args": [
+        "duckduckgo-mcp-server"
+      ],
+      "env": {},
+      "tasks": [
+        {
+          "name": "search",
+          "tool": "search",
+          "args": {
+            "query": "best pizza in chicago",
+            "max_results": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "oevortex-ddg-search",
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@oevortex/ddg_search"
+      ],
+      "env": {},
+      "tasks": [
+        {
+          "name": "search",
+          "tool": "web-search",
+          "args": {
+            "query": "best pizza in chicago",
+            "mode": "web"
+          }
+        }
+      ]
+    },
+    {
+      "id": "zhsama-duckduckgo",
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "duckduckgo-mcp-server"
+      ],
+      "env": {},
+      "tasks": [
+        {
+          "name": "search",
+          "tool": "duckduckgo_web_search",
+          "args": {
+            "query": "best pizza in chicago",
+            "count": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "open-websearch",
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "open-websearch"
+      ],
+      "env": {},
+      "tasks": [
+        {
+          "name": "search",
+          "tool": "search",
+          "args": {
+            "query": "best pizza in chicago",
+            "limit": 10,
+            "engines": [
+              "duckduckgo"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "one-search-mcp",
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "one-search-mcp"
+      ],
+      "env": {},
+      "tasks": [
+        {
+          "name": "search",
+          "tool": "one_search",
+          "args": {
+            "query": "best pizza in chicago",
+            "limit": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "web-scout-mcp",
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@pinkpixel/web-scout-mcp"
+      ],
+      "env": {},
+      "tasks": [
+        {
+          "name": "search",
+          "tool": "DuckDuckGoWebSearch",
+          "args": {
+            "query": "best pizza in chicago",
+            "maxResults": 10
+          }
+        }
+      ]
+    }
+  ]
+}

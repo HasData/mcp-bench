@@ -1,0 +1,135 @@
+{
+  "target": "google-serp",
+  "servers": [
+    {
+      "id": "hasdata",
+      "transport": "http",
+      "url": "https://mcp.hasdata.com/api/mcp?apis=google-serp",
+      "headers": {
+        "x-api-key": "$HASDATA_API_KEY"
+      },
+      "tasks": [
+        {
+          "name": "search",
+          "tool": "hasdata_google_serp_serp_getSearchResults",
+          "args": {
+            "q": "best pizza in chicago",
+            "gl": "us",
+            "hl": "en"
+          }
+        },
+        {
+          "name": "search-light",
+          "tool": "hasdata_google_serp_serp_light_getSearchResults",
+          "args": {
+            "q": "best pizza in chicago",
+            "gl": "us",
+            "hl": "en"
+          }
+        }
+      ]
+    },
+    {
+      "id": "serper",
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "serper-search-scrape-mcp-server"
+      ],
+      "env": {
+        "SERPER_API_KEY": "$SERPER_API_KEY"
+      },
+      "tasks": [
+        {
+          "name": "search",
+          "tool": "google_search",
+          "args": {
+            "q": "best pizza in chicago",
+            "gl": "us",
+            "hl": "en",
+            "num": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "g-search-mcp",
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "g-search-mcp"
+      ],
+      "env": {},
+      "tasks": [
+        {
+          "name": "search",
+          "tool": "search",
+          "args": {
+            "queries": [
+              "best pizza in chicago"
+            ],
+            "limit": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "google-search-mcp",
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "google-search-mcp"
+      ],
+      "env": {},
+      "tasks": []
+    },
+    {
+      "id": "google-surf-mcp",
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "google-surf-mcp"
+      ],
+      "env": {},
+      "tasks": []
+    },
+    {
+      "id": "serpapi",
+      "transport": "http",
+      "url": "https://mcp.serpapi.com/$SERPAPI_KEY/mcp",
+      "headers": {},
+      "tasks": [
+        {
+          "name": "search",
+          "tool": "search",
+          "args": {
+            "params": {
+              "engine": "google",
+              "q": "best pizza in chicago",
+              "gl": "us",
+              "hl": "en"
+            },
+            "mode": "compact"
+          }
+        },
+        {
+          "name": "search-light",
+          "tool": "search",
+          "args": {
+            "params": {
+              "engine": "google_light",
+              "q": "best pizza in chicago",
+              "gl": "us",
+              "hl": "en"
+            },
+            "mode": "compact"
+          }
+        }
+      ]
+    }
+  ]
+}

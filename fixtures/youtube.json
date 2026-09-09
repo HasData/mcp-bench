@@ -1,0 +1,222 @@
+{
+  "target": "youtube",
+  "servers": [
+    {
+      "id": "hasdata",
+      "transport": "http",
+      "url": "https://mcp.hasdata.com/api/mcp?apis=youtube",
+      "headers": {
+        "x-api-key": "$HASDATA_API_KEY"
+      },
+      "tasks": [
+        {
+          "name": "search",
+          "tool": "hasdata_youtube_search_getYoutubeSearchResults",
+          "args": {
+            "q": "how to make sourdough bread",
+            "gl": "us",
+            "hl": "en"
+          }
+        },
+        {
+          "name": "video",
+          "tool": "hasdata_youtube_video_getYoutubeVideo",
+          "args": {
+            "v": "dQw4w9WgXcQ"
+          }
+        },
+        {
+          "name": "transcript",
+          "tool": "hasdata_youtube_transcript_getYoutubeTranscript",
+          "args": {
+            "v": "dQw4w9WgXcQ"
+          }
+        }
+      ]
+    },
+    {
+      "id": "zubeid-youtube-mcp-server",
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "zubeid-youtube-mcp-server"
+      ],
+      "env": {
+        "YOUTUBE_API_KEY": "$YOUTUBE_API_KEY"
+      },
+      "tasks": [
+        {
+          "name": "search",
+          "tool": "videos_searchVideos",
+          "args": {
+            "query": "how to make sourdough bread",
+            "maxResults": 10
+          }
+        },
+        {
+          "name": "video",
+          "tool": "videos_getVideo",
+          "args": {
+            "videoId": "dQw4w9WgXcQ"
+          }
+        },
+        {
+          "name": "transcript",
+          "tool": "transcripts_getTranscript",
+          "args": {
+            "videoId": "dQw4w9WgXcQ"
+          }
+        }
+      ]
+    },
+    {
+      "id": "anaisbetts-mcp-youtube",
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@anaisbetts/mcp-youtube"
+      ],
+      "env": {
+        "PATH": "$PATH"
+      },
+      "tasks": [
+        {
+          "name": "transcript",
+          "tool": "download_youtube_url",
+          "args": {
+            "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+          }
+        }
+      ]
+    },
+    {
+      "id": "jkawamoto-youtube-transcript",
+      "transport": "stdio",
+      "command": "uvx",
+      "args": [
+        "--with",
+        "mcp<2",
+        "mcp-youtube-transcript"
+      ],
+      "env": {},
+      "tasks": [
+        {
+          "name": "transcript",
+          "tool": "get_transcript",
+          "args": {
+            "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+            "lang": "en"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kimtaeyoon83-youtube-transcript",
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@kimtaeyoon83/mcp-server-youtube-transcript"
+      ],
+      "env": {},
+      "tasks": [
+        {
+          "name": "transcript",
+          "tool": "get_transcript",
+          "args": {
+            "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+            "lang": "en"
+          }
+        }
+      ]
+    },
+    {
+      "id": "zcaceres-fetch-mcp",
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-fetch-server"
+      ],
+      "env": {},
+      "tasks": [
+        {
+          "name": "transcript",
+          "tool": "fetch_youtube_transcript",
+          "args": {
+            "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+            "max_length": 50000
+          }
+        }
+      ]
+    },
+    {
+      "id": "framefetch",
+      "transport": "http",
+      "url": "https://framefetch.net/mcp",
+      "headers": {
+        "Authorization": "Bearer $FRAMEFETCH_API_KEY"
+      },
+      "tasks": [
+        {
+          "name": "search",
+          "tool": "framefetch_search",
+          "args": {
+            "query": "how to make sourdough bread",
+            "limit": 10,
+            "platform": "youtube"
+          }
+        },
+        {
+          "name": "video",
+          "tool": "framefetch_extract",
+          "args": {
+            "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+            "fields": [
+              "metadata"
+            ]
+          }
+        },
+        {
+          "name": "transcript",
+          "tool": "framefetch_extract",
+          "args": {
+            "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+            "fields": [
+              "transcript"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "apify-youtube",
+      "transport": "http",
+      "url": "https://mcp.apify.com/?tools=streamers/youtube-scraper",
+      "headers": {
+        "Authorization": "Bearer $APIFY_TOKEN"
+      },
+      "tasks": [
+        {
+          "name": "search",
+          "tool": "streamers--youtube-scraper",
+          "args": {
+            "searchQueries": [
+              "how to make sourdough bread"
+            ],
+            "maxResults": 10
+          },
+          "chain": {
+            "tool": "get-dataset-items",
+            "args": {
+              "datasetId": "$.defaultDatasetId",
+              "limit": 10
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

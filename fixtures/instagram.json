@@ -1,0 +1,107 @@
+{
+  "target": "instagram",
+  "servers": [
+    {
+      "id": "hasdata",
+      "transport": "http",
+      "url": "https://mcp.hasdata.com/api/mcp?apis=instagram",
+      "headers": {
+        "x-api-key": "$HASDATA_API_KEY"
+      },
+      "tasks": [
+        {
+          "name": "profile",
+          "tool": "hasdata_instagram_profile_getInstagramProfile",
+          "args": {
+            "handle": "nasa"
+          }
+        },
+        {
+          "name": "posts",
+          "tool": "hasdata_instagram_posts_getInstagramPosts",
+          "args": {
+            "handle": "nasa",
+            "limit": 12
+          }
+        }
+      ]
+    },
+    {
+      "id": "framefetch",
+      "transport": "http",
+      "url": "https://framefetch.net/mcp",
+      "headers": {
+        "Authorization": "Bearer $FRAMEFETCH_API_KEY"
+      },
+      "tasks": [
+        {
+          "name": "profile",
+          "tool": "framefetch_extract",
+          "args": {
+            "url": "https://www.instagram.com/nasa/",
+            "fields": [
+              "metadata"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "apify-instagram",
+      "transport": "http",
+      "url": "https://mcp.apify.com/?tools=seemuapps/instagram-mcp",
+      "headers": {
+        "Authorization": "Bearer $APIFY_TOKEN"
+      },
+      "tasks": []
+    },
+    {
+      "id": "jojapi-instagram",
+      "transport": "http",
+      "url": "https://mcp.jojapi.com/instagram",
+      "headers": {
+        "Authorization": "Bearer $JOJAPI_KEY"
+      },
+      "tasks": [
+        {
+          "name": "profile",
+          "tool": "get_user_details_by_username",
+          "args": {
+            "username": "nasa"
+          }
+        },
+        {
+          "name": "posts",
+          "tool": "get_user_posts_by_username",
+          "args": {
+            "username": "nasa"
+          }
+        }
+      ]
+    },
+    {
+      "id": "jojapi-instagram-scraper",
+      "transport": "http",
+      "url": "https://mcp.jojapi.com/instagram-scraper",
+      "headers": {
+        "Authorization": "Bearer $JOJAPI_KEY"
+      },
+      "tasks": [
+        {
+          "name": "profile",
+          "tool": "get_info_username",
+          "args": {
+            "user": "nasa"
+          }
+        },
+        {
+          "name": "posts",
+          "tool": "get_posts",
+          "args": {
+            "id_user": "528817151"
+          }
+        }
+      ]
+    }
+  ]
+}

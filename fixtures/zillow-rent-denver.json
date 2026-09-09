@@ -1,0 +1,113 @@
+{
+  "target": "zillow-rent-denver",
+  "servers": [
+    {
+      "id": "hasdata",
+      "transport": "http",
+      "url": "https://mcp.hasdata.com/api/mcp?apis=zillow",
+      "headers": {
+        "x-api-key": "$HASDATA_API_KEY"
+      },
+      "tasks": [
+        {
+          "name": "search-for-rent",
+          "tool": "hasdata_zillow_listing_getRealEstateListings",
+          "args": {
+            "keyword": "Denver, CO",
+            "type": "forRent"
+          }
+        }
+      ]
+    },
+    {
+      "id": "apify-afanasenko",
+      "transport": "http",
+      "url": "https://mcp.apify.com/?tools=afanasenko/zillow-mcp-server",
+      "headers": {
+        "Authorization": "Bearer $APIFY_TOKEN"
+      },
+      "tasks": [
+        {
+          "name": "search-for-rent",
+          "tool": "afanasenko--zillow-mcp-server--zillow_search_by_url",
+          "args": {
+            "zillow_url": "https://www.zillow.com/denver-co/rentals/?searchQueryState=%7B%22isMapVisible%22%3Atrue%2C%22mapBounds%22%3A%7B%22west%22%3A-105.11%2C%22east%22%3A-104.60%2C%22south%22%3A39.61%2C%22north%22%3A39.91%7D%2C%22filterState%22%3A%7B%22fr%22%3A%7B%22value%22%3Atrue%7D%2C%22fsba%22%3A%7B%22value%22%3Afalse%7D%2C%22fsbo%22%3A%7B%22value%22%3Afalse%7D%2C%22nc%22%3A%7B%22value%22%3Afalse%7D%2C%22cmsn%22%3A%7B%22value%22%3Afalse%7D%2C%22auc%22%3A%7B%22value%22%3Afalse%7D%2C%22fore%22%3A%7B%22value%22%3Afalse%7D%7D%2C%22isListVisible%22%3Atrue%7D",
+            "max_properties": 40
+          }
+        }
+      ]
+    },
+    {
+      "id": "apify-maxcopell",
+      "transport": "http",
+      "url": "https://mcp.apify.com/?tools=maxcopell/zillow-scraper",
+      "headers": {
+        "Authorization": "Bearer $APIFY_TOKEN"
+      },
+      "tasks": [
+        {
+          "name": "search-for-rent",
+          "tool": "maxcopell--zillow-scraper",
+          "args": {
+            "searchUrls": [
+              {
+                "url": "https://www.zillow.com/denver-co/rentals/?searchQueryState=%7B%22isMapVisible%22%3Atrue%2C%22mapBounds%22%3A%7B%22west%22%3A-105.11%2C%22east%22%3A-104.60%2C%22south%22%3A39.61%2C%22north%22%3A39.91%7D%2C%22filterState%22%3A%7B%22fr%22%3A%7B%22value%22%3Atrue%7D%2C%22fsba%22%3A%7B%22value%22%3Afalse%7D%2C%22fsbo%22%3A%7B%22value%22%3Afalse%7D%2C%22nc%22%3A%7B%22value%22%3Afalse%7D%2C%22cmsn%22%3A%7B%22value%22%3Afalse%7D%2C%22auc%22%3A%7B%22value%22%3Afalse%7D%2C%22fore%22%3A%7B%22value%22%3Afalse%7D%7D%2C%22isListVisible%22%3Atrue%7D"
+              }
+            ],
+            "extractionMethod": "PAGINATION",
+            "resultsLimit": 40
+          },
+          "chain": {
+            "tool": "get-dataset-items",
+            "args": {
+              "datasetId": "$.storages.datasets.default.id",
+              "limit": 40
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "apillow",
+      "transport": "stdio",
+      "command": "uvx",
+      "args": [
+        "--with",
+        "mcp<2",
+        "apillow-mcp"
+      ],
+      "env": {
+        "APILLOW_API_KEY": "$APILLOW_API_KEY"
+      },
+      "tasks": [
+        {
+          "name": "search-for-rent",
+          "tool": "search_properties",
+          "args": {
+            "query": "Denver CO",
+            "type": "for_rent"
+          }
+        }
+      ]
+    },
+    {
+      "id": "striderlabs-mcp-zillow",
+      "transport": "stdio",
+      "command": "node",
+      "args": [
+        "vendors/mcp-zillow/dist/index.js"
+      ],
+      "env": {},
+      "tasks": [
+        {
+          "name": "search-for-rent",
+          "tool": "search_rentals",
+          "args": {
+            "location": "Denver, CO"
+          }
+        }
+      ],
+      "note": "npm package ships no dist; git clone https://github.com/markswendsen-code/mcp-zillow vendors/mcp-zillow && npm install && npm run build"
+    }
+  ]
+}
