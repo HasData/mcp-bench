@@ -69,6 +69,10 @@ A call is a failure when the server returns `isError`, when the body is an error
 
 It does not judge data quality, and three or five calls are a spot check for stability and payload shape, not a load test. Run it from where your agent will run. A server that is fine from a laptop may be blocked from a datacenter, and the other way round.
 
+## Published runs
+
+- Zillow, four scenarios, September 2026: https://gist.github.com/sergey-ermakovich/3c433761712b73692c8900aea1092418
+
 ## Fixtures in this repo
 
 `zillow.json` (Austin for-sale search and one property record), `zillow-rent-denver.json`, `zillow-sold-phoenix.json`, `zillow-zip-33139.json`, plus `google-serp.json`, `duckduckgo.json`, `youtube.json`, `airbnb.json`, `instagram.json` from the same series. Vendor keys go in `.env`. Several servers are in the fixtures because they are listed in catalogs, and stay in even though they did not start or returned nothing, because that is a result too.
