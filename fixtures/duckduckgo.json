@@ -16,7 +16,8 @@
   ],
   "notRun": {
     "DDDMUC/dsh-free-search": "a DeepSeek Harness search plugin, not a standalone MCP server: the npm package ships no binary and its README documents a settings-page card and a /free-search-engine command",
-    "brightdata": "rotation rule for this article excludes Bright Data and Apify"
+    "brightdata": "rotation rule for this article excludes Bright Data and Apify",
+    "note-one-search": "one-search-mcp defaults to SEARCH_PROVIDER=local, which scrapes Bing through a real Chrome profile. Pinned to duckduckgo here so the row measures what the article claims to measure."
   },
   "servers": [
     {
@@ -126,7 +127,9 @@
         "-y",
         "one-search-mcp"
       ],
-      "env": {},
+      "env": {
+        "SEARCH_PROVIDER": "duckduckgo"
+      },
       "tasks": [
         {
           "name": "search",
