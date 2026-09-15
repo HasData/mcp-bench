@@ -140,6 +140,7 @@ function describe(result) {
         sample: raw.slice(0, 1500),
         parsed,
         textParsed,
+        itemsArray: items,
     };
 }
 
@@ -196,10 +197,16 @@ async function run() {
         for (const task of server.tasks || []) {
             const rec = { name: task.name, tool: task.tool, args: task.args, attempts: [] };
             for (let i = 0; i < RUNS; i++) {
+                // Repeating one query measures the vendor's cache, not its API: in the 2026-09-15 Google
+                // run one server answered call 1 in 40 s and calls 2 and 3 in 77 ms, byte identical.
+                // A fixture with "queryVariants" rotates a different query into every run, so each call is cold.
+                const variants = fixture.queryVariants;
+                const query = Array.isArray(variants) && variants.length ? variants[i % variants.length] : null;
+                const args = query ? JSON.parse(JSON.stringify(task.args).replace(/\$Q\b/g, () => query.replace(/["\\]/g, '\\$&'))) : task.args;
                 const t0 = performance.now();
                 try {
                     // SDK default request timeout is 60 s; pass ours so slow actors are measured, not cut off.
-                    let res = await withTimeout(conn.client.callTool({ name: task.tool, arguments: task.args }, undefined, { timeout: TIMEOUT }), TIMEOUT, task.tool);
+                    let res = await withTimeout(conn.client.callTool({ name: task.tool, arguments: args }, undefined, { timeout: TIMEOUT }), TIMEOUT, task.tool);
                     let d = describe(res);
                     // Apify-style actor MCPs answer with run metadata and expect a second call for the dataset.
                     // task.chain = { tool, args: { datasetId: '$.defaultDatasetId' } } runs it and reports the combined time and the final payload.
@@ -216,10 +223,18 @@ async function run() {
                     const isErrObj = (o) => o && typeof o === 'object' && !Array.isArray(o) && Object.keys(o).length <= 3 && Object.keys(o).some((k) => /^(error|errors|message|detail)$/i.test(k));
                     const errEnvelope = d.bytes < 2000 && (isErrObj(d.parsed) || isErrObj(d.textParsed));
                     const emptyBody = !res.structuredContent && (d.bytes < 50 || (d.json && d.items === null && d.bytes < 200) || (!d.json && d.bytes < 300)); // empty transcript, bare header, or {results: []} // an empty transcript or a bare header line is not a result
-                    const softFail = d.isError || errEnvelope || emptyBody || (!d.json && /error|failed|exception|unauthori[sz]ed|forbidden|rate limit|captcha|blocked|anomaly|no results|redirect|omdiriger|weiterleit/i.test(d.sample.slice(0, 400)) && d.bytes < 2000);
+                    // A search result without a link is not a result. One server answers 200 with
+                    // [{ title: "Search failed", link: "", snippet: "Unable to complete..." }], which is a
+                    // failure dressed as a payload, so check the items themselves rather than the byte count.
+                    const linkOf = (o) => { const k = Object.keys(o || {}).find((kk) => /^(link|url|href|permalink)$/i.test(kk)); return k ? o[k] : undefined; };
+                    const arr = d.itemsArray;
+                    const linkless = Array.isArray(arr) && arr.length > 0 && arr.every((o) => o && typeof o === 'object' && Object.keys(o).some((kk) => /^(link|url|href|permalink|title|name)$/i.test(kk)) && !linkOf(o));
+                    const failLabel = /"(?:title|name|message|msg|status)"\s*:\s*"(?:search failed|unable to complete|request failed|no results|error)/i.test(d.sample);
+                    const softFail = d.isError || errEnvelope || emptyBody || linkless || failLabel || (!d.json && /error|failed|exception|unauthori[sz]ed|forbidden|rate limit|captcha|blocked|anomaly|no results|redirect|omdiriger|weiterleit/i.test(d.sample.slice(0, 400)) && d.bytes < 2000);
                     delete d.parsed;
                     delete d.textParsed;
-                    rec.attempts.push({ ok: !softFail, ms, ...d });
+                    delete d.itemsArray;
+                    rec.attempts.push({ ok: !softFail, ms, query, ...d });
                     process.stdout.write(`  ${server.id}/${task.name} #${i + 1}: ${softFail ? 'ERR' : 'ok'} ${ms} ms ${d.bytes} B${d.items != null ? ` ${d.items} items` : ''}\n`);
                 } catch (e) {
                     const ms = Math.round(performance.now() - t0);
@@ -251,7 +266,22 @@ async function run() {
 function report() {
     const toolsDir = path.join(BENCH, 'tools', slug);
     const resDir = path.join(BENCH, 'results', slug);
-    const lines = [`# ${slug}: MCP bench`, '', `Generated ${new Date().toISOString().slice(0, 10)}. Fixture: \`fixtures/${slug}.json\`. Each task ran ${RUNS}× (or as recorded); p50 over successful calls only.`, ''];
+    // The runs count belongs to the results on disk, not to this invocation's --runs flag,
+    // otherwise the report misstates the methodology whoever reads it then quotes.
+    const runCounts = new Set();
+    let ranAt = null;
+    if (fs.existsSync(resDir)) {
+        for (const f of fs.readdirSync(resDir).filter((f) => f.endsWith('.json'))) {
+            const r = JSON.parse(fs.readFileSync(path.join(resDir, f), 'utf8'));
+            for (const t of r.tasks || []) if (t.attempts?.length) runCounts.add(t.attempts.length);
+            if (r.ranAt && (!ranAt || r.ranAt > ranAt)) ranAt = r.ranAt;
+        }
+    }
+    const runsLabel = runCounts.size === 1 ? `${[...runCounts][0]}×` : runCounts.size ? `${Math.min(...runCounts)} to ${Math.max(...runCounts)}×` : `${RUNS}×`;
+    const variants = Array.isArray(fixture.queryVariants) && fixture.queryVariants.length
+        ? ` Each run used a different query (${fixture.queryVariants.map((q) => `\`${q}\``).join(', ')}) so no call is served from a vendor cache.`
+        : '';
+    const lines = [`# ${slug}: MCP bench`, '', `Generated ${new Date().toISOString().slice(0, 10)}${ranAt ? `, last run ${ranAt.slice(0, 16).replace('T', ' ')} UTC` : ''}. Fixture: \`fixtures/${slug}.json\`. Each task ran ${runsLabel}; p50 over successful calls only.${variants}`, ''];
     lines.push('## Tool surface', '', '| Server | Transport | Connect ms | Tools | Names | Output schema |', '|--|--|--|--|--|--|');
     for (const s of fixture.servers) {
         const p = path.join(toolsDir, `${s.id}.json`);

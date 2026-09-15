@@ -54,7 +54,21 @@ Flags: `--only id1,id2` restricts to some servers, `--timeout ms` sets the per-c
 }
 ```
 
-`transport` is `http` (streamable HTTP), `sse`, or `stdio`. `$NAME` anywhere in `url`, `headers` or `env` is replaced from the environment. A task may carry a `chain` with a second tool call whose arguments take values from the first result by path, for actor-style servers that return a run id and expect you to fetch the dataset:
+`transport` is `http` (streamable HTTP), `sse`, or `stdio`. `$NAME` anywhere in `url`, `headers` or `env` is replaced from the environment.
+
+Add a `queryVariants` array next to `target` and the runner sends a different query on every run, substituting it for `$Q` anywhere in a task's `args`:
+
+```json
+{
+  "target": "duckduckgo",
+  "queryVariants": ["rust async runtime comparison", "postgres index bloat", "wireguard vs openvpn"],
+  "servers": [
+    { "id": "hasdata", "transport": "http", "url": "...", "tasks": [{ "name": "search", "tool": "...", "args": { "q": "$Q" } }] }
+  ]
+}
+```
+
+Use it. Repeating one query measures the vendor's cache rather than its API: in one run here a server answered call 1 in 40 seconds and calls 2 and 3 in 77 milliseconds with a byte-identical body. Vendors also cache across runs, so a comparison that has to be fair needs queries none of the servers has seen. The query used is recorded on every attempt in the results file. A task may carry a `chain` with a second tool call whose arguments take values from the first result by path, for actor-style servers that return a run id and expect you to fetch the dataset:
 
 ```json
 { "name": "search", "tool": "maxcopell--zillow-scraper", "args": { "...": "..." },
@@ -63,7 +77,7 @@ Flags: `--only id1,id2` restricts to some servers, `--timeout ms` sets the per-c
 
 ## What counts as a failure
 
-A call is a failure when the server returns `isError`, when the body is an error envelope such as `{"error": "quota exceeded"}` even with a 200, when the body is under 50 bytes or an empty JSON list, when a non-JSON body is short and mentions an error, a rate limit, a captcha or a redirect, or when the call times out. Latency in the report is the median over successful calls only. Item and field counts come from the first array of objects found in the JSON, so they are a shape check, not a schema.
+A call is a failure when the server returns `isError`, when the body is an error envelope such as `{"error": "quota exceeded"}` even with a 200, when the body is under 50 bytes or an empty JSON list, when every item in the result set has an empty or missing link, when a title, name, message or status field opens with a failure word such as "Search failed", when a non-JSON body is short and mentions an error, a rate limit, a captcha or a redirect, or when the call times out. The last two rules exist because servers fail inside a 200 more often than they error: one returns `[{ "title": "Search failed", "link": "" }]` and another returns `{"totalResults": 0, "results": []}` with no error flag, and an agent that branches on errors treats both as answers. Latency in the report is the median over successful calls only. Item and field counts come from the first array of objects found in the JSON, so they are a shape check, not a schema.
 
 ## What it does not do
 
@@ -75,6 +89,6 @@ It does not judge data quality, and three or five calls are a spot check for sta
 
 ## Fixtures in this repo
 
-`zillow.json` (Austin for-sale search and one property record), `zillow-rent-denver.json`, `zillow-sold-phoenix.json`, `zillow-zip-33139.json`, plus `google-serp.json`, `duckduckgo.json`, `youtube.json`, `airbnb.json`, `instagram.json` from the same series. Vendor keys go in `.env`. Several servers are in the fixtures because they are listed in catalogs, and stay in even though they did not start or returned nothing, because that is a result too.
+`zillow.json` (Austin for-sale search and one property record), `zillow-rent-denver.json`, `zillow-sold-phoenix.json`, `zillow-zip-33139.json`, plus `google-serp.json`, `duckduckgo.json`, `youtube.json`, `airbnb.json`, `instagram.json` from the same series. `duckduckgo.json` and `google-serp.json` carry `queryVariants` and run twelve and three distinct queries per server. Vendor keys go in `.env`. Several servers are in the fixtures because they are listed in catalogs, and stay in even though they did not start or returned nothing, because that is a result too.
 
 MIT. Maintained by [HasData](https://hasdata.com).

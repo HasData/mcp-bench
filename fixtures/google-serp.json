@@ -1,5 +1,10 @@
 {
   "target": "google-serp",
+  "queryVariants": [
+    "best pizza in chicago",
+    "python web scraping",
+    "nike air max"
+  ],
   "servers": [
     {
       "id": "hasdata",
@@ -13,7 +18,7 @@
           "name": "search",
           "tool": "hasdata_google_serp_serp_getSearchResults",
           "args": {
-            "q": "best pizza in chicago",
+            "q": "$Q",
             "gl": "us",
             "hl": "en"
           }
@@ -22,7 +27,7 @@
           "name": "search-light",
           "tool": "hasdata_google_serp_serp_light_getSearchResults",
           "args": {
-            "q": "best pizza in chicago",
+            "q": "$Q",
             "gl": "us",
             "hl": "en"
           }
@@ -45,7 +50,7 @@
           "name": "search",
           "tool": "google_search",
           "args": {
-            "q": "best pizza in chicago",
+            "q": "$Q",
             "gl": "us",
             "hl": "en",
             "num": 10
@@ -68,7 +73,7 @@
           "tool": "search",
           "args": {
             "queries": [
-              "best pizza in chicago"
+              "$Q"
             ],
             "limit": 10
           }
@@ -95,7 +100,16 @@
         "google-surf-mcp"
       ],
       "env": {},
-      "tasks": []
+      "tasks": [
+        {
+          "name": "search",
+          "tool": "search",
+          "args": {
+            "query": "$Q",
+            "limit": 10
+          }
+        }
+      ]
     },
     {
       "id": "serpapi",
@@ -109,7 +123,7 @@
           "args": {
             "params": {
               "engine": "google",
-              "q": "best pizza in chicago",
+              "q": "$Q",
               "gl": "us",
               "hl": "en"
             },
@@ -122,11 +136,92 @@
           "args": {
             "params": {
               "engine": "google_light",
-              "q": "best pizza in chicago",
+              "q": "$Q",
               "gl": "us",
               "hl": "en"
             },
             "mode": "compact"
+          }
+        }
+      ]
+    },
+    {
+      "id": "serphouse",
+      "transport": "http",
+      "url": "https://mcp.serphouse.com/mcp",
+      "headers": {
+        "SERPHOUSE_API": "$SERPHOUSE_API_KEY"
+      },
+      "tasks": [
+        {
+          "name": "search",
+          "tool": "serphouse_google_web",
+          "args": {
+            "q": "$Q",
+            "domain": "google.com",
+            "lang": "en",
+            "device": "desktop",
+            "loc": "United States"
+          }
+        },
+        {
+          "name": "search-light",
+          "tool": "serphouse_google_web_lite",
+          "args": {
+            "q": "$Q",
+            "domain": "google.com",
+            "lang": "en",
+            "gl": "US"
+          }
+        }
+      ]
+    },
+    {
+      "id": "noapi-google-search",
+      "transport": "stdio",
+      "command": "uvx",
+      "args": [
+        "noapi-google-search-mcp"
+      ],
+      "env": {},
+      "tasks": []
+    },
+    {
+      "id": "nimrod",
+      "transport": "http",
+      "url": "https://nimrod.orchis.ai/mcp",
+      "headers": {},
+      "tasks": []
+    },
+    {
+      "id": "openserp",
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@openserp/mcp"
+      ],
+      "env": {},
+      "tasks": [
+        {
+          "name": "search",
+          "tool": "search",
+          "args": {
+            "engine": "google",
+            "text": "$Q",
+            "lang": "EN",
+            "region": "US",
+            "limit": 10
+          }
+        },
+        {
+          "name": "search-light",
+          "tool": "fast_search",
+          "args": {
+            "text": "$Q",
+            "lang": "EN",
+            "region": "US",
+            "limit": 10
           }
         }
       ]

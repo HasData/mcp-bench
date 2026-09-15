@@ -1,5 +1,23 @@
 {
   "target": "duckduckgo",
+  "queryVariants": [
+    "rust async runtime comparison",
+    "sourdough starter troubleshooting",
+    "electric bike range test",
+    "postgres index bloat",
+    "wireguard vs openvpn",
+    "kubernetes pod eviction reasons",
+    "espresso grind size guide",
+    "ceramic knife sharpening",
+    "raspberry pi power consumption",
+    "typescript satisfies operator",
+    "bird migration patterns europe",
+    "solar inverter efficiency"
+  ],
+  "notRun": {
+    "DDDMUC/dsh-free-search": "a DeepSeek Harness search plugin, not a standalone MCP server: the npm package ships no binary and its README documents a settings-page card and a /free-search-engine command",
+    "brightdata": "rotation rule for this article excludes Bright Data and Apify"
+  },
   "servers": [
     {
       "id": "hasdata",
@@ -13,7 +31,7 @@
           "name": "search",
           "tool": "hasdata_duckduckgo_serp_getSearchResults",
           "args": {
-            "q": "best pizza in chicago"
+            "q": "$Q"
           }
         }
       ]
@@ -31,7 +49,7 @@
           "name": "search",
           "tool": "search",
           "args": {
-            "query": "best pizza in chicago",
+            "query": "$Q",
             "max_results": 10
           }
         }
@@ -51,7 +69,7 @@
           "name": "search",
           "tool": "web-search",
           "args": {
-            "query": "best pizza in chicago",
+            "query": "$Q",
             "mode": "web"
           }
         }
@@ -71,7 +89,7 @@
           "name": "search",
           "tool": "duckduckgo_web_search",
           "args": {
-            "query": "best pizza in chicago",
+            "query": "$Q",
             "count": 10
           }
         }
@@ -91,7 +109,7 @@
           "name": "search",
           "tool": "search",
           "args": {
-            "query": "best pizza in chicago",
+            "query": "$Q",
             "limit": 10,
             "engines": [
               "duckduckgo"
@@ -114,7 +132,7 @@
           "name": "search",
           "tool": "one_search",
           "args": {
-            "query": "best pizza in chicago",
+            "query": "$Q",
             "limit": 10
           }
         }
@@ -134,8 +152,31 @@
           "name": "search",
           "tool": "DuckDuckGoWebSearch",
           "args": {
-            "query": "best pizza in chicago",
+            "query": "$Q",
             "maxResults": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "free-search-mcp",
+      "transport": "stdio",
+      "command": "uvx",
+      "args": [
+        "free-search-mcp"
+      ],
+      "env": {},
+      "tasks": [
+        {
+          "name": "search",
+          "tool": "search",
+          "args": {
+            "query": "$Q",
+            "engines": [
+              "duckduckgo"
+            ],
+            "max_results": 10,
+            "use_cache": false
           }
         }
       ]
