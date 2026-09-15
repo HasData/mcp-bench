@@ -230,7 +230,13 @@ async function run() {
                     const arr = d.itemsArray;
                     const linkless = Array.isArray(arr) && arr.length > 0 && arr.every((o) => o && typeof o === 'object' && Object.keys(o).some((kk) => /^(link|url|href|permalink|title|name)$/i.test(kk)) && !linkOf(o));
                     const failLabel = /"(?:title|name|message|msg|status)"\s*:\s*"(?:search failed|unable to complete|request failed|no results|error)/i.test(d.sample);
-                    const softFail = d.isError || errEnvelope || emptyBody || linkless || failLabel || (!d.json && /error|failed|exception|unauthori[sz]ed|forbidden|rate limit|captcha|blocked|anomaly|no results|redirect|omdiriger|weiterleit/i.test(d.sample.slice(0, 400)) && d.bytes < 2000);
+                    // The SDK wraps a plain text body in structuredContent, so d.json is true even when the
+                    // payload is prose. nickclyde answered 417 bytes of "No results were found ... DuckDuckGo's
+                    // bot detection" and scored as a success until this rule stopped requiring !d.json and
+                    // started asking whether any items were found at all.
+                    const excuse = /error|failed|exception|unauthori[sz]ed|forbidden|rate limit|captcha|blocked|bot detection|anomaly|no results|no matches|redirect|omdiriger|weiterleit/i;
+                    const prosefail = d.items === null && d.bytes < 2000 && excuse.test(d.sample.slice(0, 400));
+                    const softFail = d.isError || errEnvelope || emptyBody || linkless || failLabel || prosefail;
                     delete d.parsed;
                     delete d.textParsed;
                     delete d.itemsArray;
